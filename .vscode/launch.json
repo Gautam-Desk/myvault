@@ -1,0 +1,39 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "FastAPI: Backend (Port 8000)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "main:app",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8000",
+        "--reload"
+      ],
+      "cwd": "${workspaceFolder}/backend",
+      "python": "${workspaceFolder}/backend/venv/Scripts/python.exe",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Launch Edge/Chrome (http://localhost:5173)",
+      "type": "msedge",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/frontend/src",
+      "preLaunchTask": "Start Athenaeum (Full Stack)"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full Stack (Backend + Browser)",
+      "configurations": [
+        "FastAPI: Backend (Port 8000)",
+        "Launch Edge/Chrome (http://localhost:5173)"
+      ]
+    }
+  ]
+}

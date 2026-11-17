@@ -1,0 +1,230 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --sidebar-bg-top: #22150E;
+  --sidebar-bg-bot: #190F0A;
+  --sidebar-border: #3B2519;
+  --canvas-bg: #F5EDE3;
+  --card-bg: #FCF8F2;
+  --card-border: #DFD0BE;
+  --text-primary: #26170F;
+  --text-secondary: #5E4637;
+  --accent-cognac: #C87A3B;
+  --accent-gold: #E09453;
+}
+
+html.dark,
+.dark {
+  --sidebar-bg-top: #150D08;
+  --sidebar-bg-bot: #0D0704;
+  --sidebar-border: #2D1A10;
+  --canvas-bg: #140C08;
+  --card-bg: #1C120B;
+  --card-border: #362014;
+  --text-primary: #F7EFE6;
+  --text-secondary: #BAA493;
+  --accent-cognac: #E09453;
+  --accent-gold: #F2AF72;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background-color: var(--canvas-bg);
+  color: var(--text-primary);
+  overflow: hidden;
+}
+
+html.dark body {
+  background-color: #140C08;
+  color: #F7EFE6;
+}
+
+/* Warm parchment grain background */
+.parchment-canvas {
+  background-color: #F5EDE3;
+  background-image: radial-gradient(rgba(124, 50, 34, 0.035) 1px, transparent 0);
+  background-size: 18px 18px;
+}
+
+html.dark .parchment-canvas {
+  background-color: #140C08;
+  background-image: radial-gradient(rgba(224, 148, 83, 0.06) 1px, transparent 0);
+}
+
+/* Roasted Espresso Sidebar Gradient */
+.espresso-sidebar {
+  background: linear-gradient(180deg, #22150E 0%, #190F0A 100%);
+  border-right: 1px solid #3B2519;
+}
+
+/* Sidebar Active Navigation Item */
+.nav-item-active {
+  background-color: rgba(200, 122, 59, 0.18);
+  color: #F7EFE6;
+  position: relative;
+}
+.nav-item-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background-color: #E09453;
+}
+
+/* Tactile Hardcover Book Card */
+.book-card {
+  background-color: #FCF8F2;
+  border: 1px solid #DFD0BE;
+  box-shadow: 0 2px 8px rgba(42, 24, 14, 0.06);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.book-card:hover {
+  transform: translateY(-2px);
+  border-color: #C87A3B;
+  box-shadow: 0 8px 20px rgba(42, 24, 14, 0.11);
+}
+
+html.dark .book-card {
+  background-color: #1A100A;
+  border-color: #382417;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+}
+html.dark .book-card:hover {
+  border-color: #E09453;
+  box-shadow: 0 8px 24px rgba(224, 148, 83, 0.14);
+}
+
+/* Embossed 6px Left Book Spine Strip */
+.book-spine-strip {
+  width: 6px;
+  flex-shrink: 0;
+  box-shadow: inset -1px 0 2px rgba(0, 0, 0, 0.28), inset 1px 0 1px rgba(255, 255, 255, 0.18);
+}
+
+/* Custom Warm Scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(138, 111, 92, 0.32);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(124, 50, 34, 0.55);
+}
+
+/* 3 Scholarly Reader Themes */
+.reader-stage-parchment {
+  background-color: #EDE1D2;
+}
+.reader-sheet-parchment {
+  background-color: #FCF8F2;
+  color: #26170F;
+  border: 1px solid #DFD0BE;
+  box-shadow: 0 10px 28px rgba(42, 24, 14, 0.09);
+}
+
+.reader-stage-sepia {
+  background-color: #DFD1B8;
+}
+.reader-sheet-sepia {
+  background-color: #F4E9D4;
+  color: #2B1D12;
+  border: 1px solid #CBB99B;
+  box-shadow: 0 10px 28px rgba(56, 36, 18, 0.13);
+}
+.reader-sheet-sepia canvas {
+  filter: sepia(0.28) brightness(0.96) contrast(0.98);
+}
+
+.reader-stage-espresso {
+  background-color: #160E09;
+}
+.reader-sheet-espresso {
+  background-color: #231710;
+  color: #EFE4D6;
+  border: 1px solid #3B2519;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.65);
+}
+.reader-sheet-espresso canvas {
+  filter: invert(0.88) sepia(0.22) hue-rotate(175deg) contrast(0.93);
+}
+
+/* 4 Scholarly Ink Highlight Swatches */
+mark.hl-amber {
+  background-color: rgba(224, 148, 83, 0.36);
+  color: inherit;
+  border-bottom: 2px solid #C87A3B;
+  border-radius: 2px;
+  padding: 0 2px;
+}
+mark.hl-terracotta {
+  background-color: rgba(196, 91, 71, 0.30);
+  color: inherit;
+  border-bottom: 2px solid #B54935;
+  border-radius: 2px;
+  padding: 0 2px;
+}
+mark.hl-sage {
+  background-color: rgba(107, 134, 84, 0.30);
+  color: inherit;
+  border-bottom: 2px solid #4F683A;
+  border-radius: 2px;
+  padding: 0 2px;
+}
+mark.hl-slate {
+  background-color: rgba(91, 124, 148, 0.30);
+  color: inherit;
+  border-bottom: 2px solid #43647D;
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+/* PDF.js Selectable Text Layer Overlay */
+.pdf-page-wrapper {
+  position: relative;
+  display: inline-block;
+}
+.pdf-page-wrapper .textLayer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0.28;
+  line-height: 1;
+  user-select: text;
+}
+.pdf-page-wrapper .textLayer ::selection {
+  background: rgba(200, 122, 59, 0.45);
+}
+
+/* 3D Flashcard Flip */
+.perspective-1000 {
+  perspective: 1000px;
+}
+.preserve-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.highlight-cursor-active {
+  cursor: text;
+}
+.highlight-cursor-active ::selection {
+  background: rgba(224, 148, 83, 0.48);
+}
