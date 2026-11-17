@@ -5,6 +5,8 @@ import {
   PanelRightClose,
   CheckCircle,
   Plus,
+  Trash2,
+  RotateCcw,
 } from 'lucide-react';
 import { useLibraryStore } from '../store/useLibraryStore';
 import { ToolTab } from '../types';
@@ -32,6 +34,7 @@ export const StudyTools: React.FC = () => {
     setActiveToolTab,
     setHighlightFilter,
     updateNotes,
+    clearNotes,
     goToPage,
     addFlashcard,
     reviewCard,
@@ -68,6 +71,13 @@ export const StudyTools: React.FC = () => {
   const handleStampPage = () => {
     const stamp = `\n**[Page ${currentPage}]** — `;
     updateNotes(currentNotes + stamp, currentPage);
+  };
+
+  const handleClearNotes = async () => {
+    if (window.confirm('Clear all study notes for this volume?')) {
+      await clearNotes();
+      showToast('Notes cleared');
+    }
   };
 
   const handleExportMarkdown = () => {
@@ -110,7 +120,7 @@ export const StudyTools: React.FC = () => {
 
   return (
     <aside
-      className={`w-[295px] bg-[#FCF8F2] border-l border-[#DFD0BE] flex flex-col shrink-0 z-20 absolute md:relative inset-y-0 right-0 shadow-xl md:shadow-none transition-transform duration-200 ${
+      className={`w-[295px] bg-[#FCF8F2] dark:bg-[#160E09] border-l border-[#DFD0BE] dark:border-[#382417] flex flex-col shrink-0 z-20 absolute md:relative inset-y-0 right-0 shadow-xl md:shadow-none transition-all duration-200 ${
         readerRightDockOpen ? 'translate-x-0' : 'translate-x-full md:hidden'
       }`}
     >
@@ -122,28 +132,28 @@ export const StudyTools: React.FC = () => {
       )}
 
       {/* 4-Tab Bar */}
-      <div className="p-2 border-b border-[#DFD0BE] bg-[#F8F2E9] space-y-1.5">
+      <div className="p-2 border-b border-[#DFD0BE] dark:border-[#382417] bg-[#F8F2E9] dark:bg-[#1F130B] space-y-1.5">
         <div className="flex items-center justify-between px-1">
-          <span className="text-[9px] font-bold uppercase tracking-widest text-[#8A6F5C]">
+          <span className="text-[9px] font-bold uppercase tracking-widest text-[#8A6F5C] dark:text-[#A88E79]">
             Study Toolkit
           </span>
           <button
             onClick={toggleReaderRightDock}
             title="Collapse Toolkit Dock"
-            className="p-0.5 text-[#8A6F5C] hover:text-[#26170F] rounded"
+            className="p-0.5 text-[#8A6F5C] dark:text-[#A88E79] hover:text-[#26170F] dark:hover:text-[#F7EFE6] rounded"
           >
             <PanelRightClose className="w-3.5 h-3.5" />
           </button>
         </div>
-        <div className="grid grid-cols-4 gap-1 bg-[#EDE1D2] p-0.5 rounded-lg border border-[#DFD0BE]">
+        <div className="grid grid-cols-4 gap-1 bg-[#EDE1D2] dark:bg-[#2A1A12] p-0.5 rounded-lg border border-[#DFD0BE] dark:border-[#382417]">
           {(['notes', 'flashcards', 'annotations', 'focus'] as ToolTab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveToolTab(tab)}
               className={`py-1 rounded-md text-[11px] capitalize transition-all ${
                 activeToolTab === tab
-                  ? 'font-bold bg-[#26170F] text-[#FCF8F2] shadow-xs'
-                  : 'font-semibold text-[#5E4637] hover:text-[#26170F]'
+                  ? 'font-bold bg-[#26170F] dark:bg-[#A85D2A] text-[#FCF8F2] shadow-xs'
+                  : 'font-semibold text-[#5E4637] dark:text-[#BAA493] hover:text-[#26170F] dark:hover:text-[#F7EFE6]'
               }`}
             >
               {tab === 'annotations' ? 'Marks' : tab === 'flashcards' ? 'Cards' : tab === 'focus' ? 'Tools' : 'Notes'}
@@ -155,10 +165,10 @@ export const StudyTools: React.FC = () => {
       {/* TAB 1: NOTES */}
       {activeToolTab === 'notes' && (
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="px-2.5 py-2 border-b border-[#DFD0BE] bg-[#FCF8F2] flex items-center justify-between gap-1.5">
+          <div className="px-2.5 py-2 border-b border-[#DFD0BE] dark:border-[#382417] bg-[#FCF8F2] dark:bg-[#160E09] flex items-center justify-between gap-1.5">
             <button
               onClick={handleStampPage}
-              className="flex items-center gap-1 bg-[#F5EDE3] hover:bg-[#EDE1D2] text-[#7C3222] border border-[#DFD0BE] text-[11px] font-semibold px-2 py-1 rounded-lg transition-colors"
+              className="flex items-center gap-1 bg-[#F5EDE3] dark:bg-[#281A12] hover:bg-[#EDE1D2] dark:hover:bg-[#382417] text-[#7C3222] dark:text-[#E09453] border border-[#DFD0BE] dark:border-[#382417] text-[11px] font-semibold px-2 py-1 rounded-lg transition-colors"
             >
               <Pin className="w-3 h-3" />
               <span>Stamp Page {currentPage}</span>
@@ -168,18 +178,25 @@ export const StudyTools: React.FC = () => {
               <span
                 className={`text-[10px] font-medium ${
                   notesSaveStatus === 'Saved'
-                    ? 'text-[#4F683A]'
+                    ? 'text-[#4F683A] dark:text-[#789A5B]'
                     : notesSaveStatus === 'Saving...'
-                    ? 'text-[#C87A3B]'
+                    ? 'text-[#C87A3B] dark:text-[#E09453]'
                     : 'text-[#B54935]'
                 }`}
               >
                 {notesSaveStatus}
               </span>
               <button
+                onClick={handleClearNotes}
+                title="Clear Notes"
+                className="p-1 rounded text-[#8A6F5C] dark:text-[#A88E79] hover:text-[#B54935] hover:bg-[#F5EDE3] dark:hover:bg-[#281A12] transition-colors"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+              <button
                 onClick={handleExportMarkdown}
                 title="Export Markdown (.md)"
-                className="flex items-center gap-1 bg-[#26170F] hover:bg-[#3B2519] text-[#FCF8F2] text-[11px] font-semibold px-2 py-1 rounded-lg transition-colors"
+                className="flex items-center gap-1 bg-[#26170F] dark:bg-[#A85D2A] hover:bg-[#3B2519] dark:hover:bg-[#BD6B33] text-[#FCF8F2] text-[11px] font-semibold px-2 py-1 rounded-lg transition-colors"
               >
                 <Download className="w-3 h-3" />
                 <span>Export .md</span>
@@ -188,16 +205,16 @@ export const StudyTools: React.FC = () => {
           </div>
 
           {/* Page-Linked Jump Chips */}
-          <div className="px-2.5 py-1.5 bg-[#F8F2E9] border-b border-[#DFD0BE] flex items-center gap-1 overflow-x-auto text-[10px]">
-            <span className="text-[#8A6F5C] font-semibold shrink-0">Jump:</span>
+          <div className="px-2.5 py-1.5 bg-[#F8F2E9] dark:bg-[#1F130B] border-b border-[#DFD0BE] dark:border-[#382417] flex items-center gap-1 overflow-x-auto text-[10px]">
+            <span className="text-[#8A6F5C] dark:text-[#A88E79] font-semibold shrink-0">Jump:</span>
             {pageAnchors.length === 0 ? (
-              <span className="text-[#8A6F5C] italic">Click Stamp to link pages</span>
+              <span className="text-[#8A6F5C] dark:text-[#7A6453] italic">Click Stamp to link pages</span>
             ) : (
               pageAnchors.map((p) => (
                 <button
                   key={p}
                   onClick={() => goToPage(p)}
-                  className="px-1.5 py-0.5 rounded bg-[#FCF8F2] hover:bg-[#EDE1D2] border border-[#DFD0BE] font-mono font-semibold text-[#7C3222] shrink-0"
+                  className="px-1.5 py-0.5 rounded bg-[#FCF8F2] dark:bg-[#281A12] hover:bg-[#EDE1D2] dark:hover:bg-[#382417] border border-[#DFD0BE] dark:border-[#382417] font-mono font-semibold text-[#7C3222] dark:text-[#E09453] shrink-0"
                 >
                   P.{p}
                 </button>
@@ -209,7 +226,7 @@ export const StudyTools: React.FC = () => {
             value={currentNotes}
             onChange={(e) => updateNotes(e.target.value, currentPage)}
             placeholder="Write page-linked study notes in Markdown... Click 'Stamp Page X' to anchor notes to the active page."
-            className="flex-1 w-full p-3 text-xs leading-relaxed text-[#26170F] bg-[#FCF8F2] resize-none focus:outline-none font-sans"
+            className="flex-1 w-full p-3 text-xs leading-relaxed text-[#26170F] dark:text-[#F7EFE6] bg-[#FCF8F2] dark:bg-[#160E09] placeholder-[#8A6F5C] dark:placeholder-[#6D5443] resize-none focus:outline-none font-sans"
           />
         </div>
       )}
@@ -265,32 +282,66 @@ export const StudyTools: React.FC = () => {
                     }`}
                   >
                     {/* Front */}
-                    <div className="backface-hidden absolute inset-0 rounded-xl bg-gradient-to-br from-[#FCF8F2] to-[#F3E7D8] border-2 border-[#DFD0BE] p-4 flex flex-col justify-between shadow-xs">
+                    <div className="backface-hidden absolute inset-0 rounded-xl bg-gradient-to-br from-[#FCF8F2] to-[#F3E7D8] dark:from-[#20140D] dark:to-[#160E09] border-2 border-[#DFD0BE] dark:border-[#382417] p-4 flex flex-col justify-between shadow-xs">
                       <div className="flex items-center justify-between">
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-[#A85D2A] bg-[#A85D2A]/10 px-1.5 py-0.5 rounded">
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-[#A85D2A] dark:text-[#E09453] bg-[#A85D2A]/10 dark:bg-[#E09453]/15 px-1.5 py-0.5 rounded">
                           Prompt
                         </span>
-                        <span className="text-[10px] font-mono text-[#8A6F5C]">
-                          Page {currentCard.source_page}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-mono text-[#8A6F5C] dark:text-[#A88E79]">
+                            Page {currentCard.source_page}
+                          </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (window.confirm('Delete this flashcard?')) {
+                                deleteCard(currentCard.id);
+                                setIsFlipped(false);
+                                setActiveCardIdx((idx) => Math.max(0, Math.min(idx, flashcards.length - 2)));
+                                showToast('Flashcard deleted');
+                              }
+                            }}
+                            title="Delete Flashcard"
+                            className="p-1 rounded text-[#8A6F5C] dark:text-[#A88E79] hover:text-[#B54935] hover:bg-[#EDE1D2] dark:hover:bg-[#281A12] transition-colors"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
-                      <p className="font-serif text-sm font-semibold text-[#26170F] text-center leading-snug my-auto">
+                      <p className="font-serif text-sm font-semibold text-[#26170F] dark:text-[#F7EFE6] text-center leading-snug my-auto">
                         {currentCard.front_md}
                       </p>
-                      <div className="text-center text-[10px] text-[#8A6F5C]">
+                      <div className="text-center text-[10px] text-[#8A6F5C] dark:text-[#A88E79]">
                         Tap to reveal answer
                       </div>
                     </div>
 
                     {/* Back */}
-                    <div className="backface-hidden rotate-y-180 absolute inset-0 rounded-xl bg-gradient-to-br from-[#26170F] to-[#3B2519] text-[#F7EFE6] border-2 border-[#C87A3B]/40 p-4 flex flex-col justify-between shadow-sm">
+                    <div className="backface-hidden rotate-y-180 absolute inset-0 rounded-xl bg-gradient-to-br from-[#26170F] to-[#3B2519] dark:from-[#180F0A] dark:to-[#22150E] text-[#F7EFE6] border-2 border-[#C87A3B]/40 dark:border-[#E09453]/40 p-4 flex flex-col justify-between shadow-sm">
                       <div className="flex items-center justify-between">
                         <span className="text-[9px] font-bold uppercase tracking-wider text-[#E09453] bg-[#E09453]/15 px-1.5 py-0.5 rounded">
                           Answer
                         </span>
-                        <span className="text-[10px] font-mono text-[#A88E79]">
-                          Active Recall
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-mono text-[#A88E79]">
+                            Active Recall
+                          </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (window.confirm('Delete this flashcard?')) {
+                                deleteCard(currentCard.id);
+                                setIsFlipped(false);
+                                setActiveCardIdx((idx) => Math.max(0, Math.min(idx, flashcards.length - 2)));
+                                showToast('Flashcard deleted');
+                              }
+                            }}
+                            title="Delete Flashcard"
+                            className="p-1 rounded text-[#A88E79] hover:text-[#B54935] hover:bg-[#3B2519] transition-colors"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
                       <p className="text-xs text-[#F7EFE6] text-center leading-relaxed my-auto">
                         {currentCard.back_md}
@@ -302,7 +353,7 @@ export const StudyTools: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <div className="rounded-xl border border-dashed border-[#DFD0BE] p-8 text-center text-xs text-[#8A6F5C]">
+                <div className="rounded-xl border border-dashed border-[#DFD0BE] dark:border-[#382417] p-8 text-center text-xs text-[#8A6F5C] dark:text-[#A88E79]">
                   No cards in this deck yet. Switch to "+ Add Card" or highlight text in the reader.
                 </div>
               )}
@@ -318,7 +369,7 @@ export const StudyTools: React.FC = () => {
                           (activeCardIdx - 1 + flashcards.length) % flashcards.length
                         );
                       }}
-                      className="py-1.5 px-2 rounded-lg bg-[#F5EDE3] hover:bg-[#EDE1D2] border border-[#DFD0BE] text-[11px] font-semibold text-[#26170F]"
+                      className="py-1.5 px-2 rounded-lg bg-[#F5EDE3] dark:bg-[#281A12] hover:bg-[#EDE1D2] dark:hover:bg-[#382417] border border-[#DFD0BE] dark:border-[#382417] text-[11px] font-semibold text-[#26170F] dark:text-[#F7EFE6]"
                     >
                       ← Prev
                     </button>
@@ -333,7 +384,7 @@ export const StudyTools: React.FC = () => {
                         setIsFlipped(false);
                         setActiveCardIdx((activeCardIdx + 1) % flashcards.length);
                       }}
-                      className="py-1.5 px-2 rounded-lg bg-[#F5EDE3] hover:bg-[#EDE1D2] border border-[#DFD0BE] text-[11px] font-semibold text-[#26170F]"
+                      className="py-1.5 px-2 rounded-lg bg-[#F5EDE3] dark:bg-[#281A12] hover:bg-[#EDE1D2] dark:hover:bg-[#382417] border border-[#DFD0BE] dark:border-[#382417] text-[11px] font-semibold text-[#26170F] dark:text-[#F7EFE6]"
                     >
                       Next →
                     </button>
@@ -341,7 +392,7 @@ export const StudyTools: React.FC = () => {
 
                   {/* Spaced Repetition Ratings */}
                   <div className="space-y-1">
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-[#8A6F5C] text-center">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-[#8A6F5C] dark:text-[#A88E79] text-center">
                       Recall Grade:
                     </div>
                     <div className="grid grid-cols-3 gap-1">
@@ -370,20 +421,65 @@ export const StudyTools: React.FC = () => {
                     onClick={() => toggleCardMastered(currentCard.id)}
                     className={`w-full py-2 px-3 rounded-lg border text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-all ${
                       currentCard.is_mastered
-                        ? 'border-[#4F683A]/40 bg-[#4F683A]/15 text-[#3D522C]'
-                        : 'border-[#DFD0BE] bg-[#F5EDE3] hover:bg-[#EDE1D2] text-[#26170F]'
+                        ? 'border-[#4F683A]/40 bg-[#4F683A]/15 text-[#3D522C] dark:text-[#88B868]'
+                        : 'border-[#DFD0BE] dark:border-[#382417] bg-[#F5EDE3] dark:bg-[#281A12] hover:bg-[#EDE1D2] dark:hover:bg-[#382417] text-[#26170F] dark:text-[#F7EFE6]'
                     }`}
                   >
                     <CheckCircle className="w-3.5 h-3.5" />
                     <span>{currentCard.is_mastered ? 'Mastered ✓' : 'Mark as Mastered'}</span>
                   </button>
+
+                  {/* Deck Overview & Quick Delete List */}
+                  {flashcards.length > 0 && (
+                    <div className="space-y-1.5 pt-2 border-t border-[#DFD0BE] dark:border-[#382417]">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-[#8A6F5C] dark:text-[#A88E79]">
+                        Deck Overview ({flashcards.length})
+                      </div>
+                      <div className="max-h-36 overflow-y-auto space-y-1 pr-0.5">
+                        {flashcards.map((c, i) => (
+                          <div
+                            key={c.id}
+                            onClick={() => {
+                              setActiveCardIdx(i);
+                              setIsFlipped(false);
+                            }}
+                            className={`flex items-center justify-between p-1.5 rounded-lg border text-[11px] cursor-pointer transition-colors ${
+                              i === activeCardIdx
+                                ? 'bg-[#F5EDE3] dark:bg-[#281A12] border-[#C87A3B] font-semibold text-[#26170F] dark:text-[#F7EFE6]'
+                                : 'bg-[#FCF8F2] dark:bg-[#1A100A] border-[#DFD0BE] dark:border-[#382417] text-[#5E4637] dark:text-[#BAA493] hover:bg-[#EDE1D2] dark:hover:bg-[#22150E]'
+                            }`}
+                          >
+                            <span className="truncate flex-1 pr-2">
+                              {i + 1}. {c.front_md}
+                            </span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (window.confirm('Delete this flashcard?')) {
+                                  deleteCard(c.id);
+                                  if (activeCardIdx >= flashcards.length - 1) {
+                                    setActiveCardIdx(Math.max(0, flashcards.length - 2));
+                                  }
+                                  showToast('Flashcard deleted');
+                                }
+                              }}
+                              title="Delete Card"
+                              className="p-1 text-[#8A6F5C] dark:text-[#A88E79] hover:text-[#B54935] rounded"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
             </div>
           ) : (
             <form onSubmit={handleCreateFlashcard} className="space-y-2.5">
               <div>
-                <label className="block text-[11px] font-semibold text-[#5E4637] mb-1">
+                <label className="block text-[11px] font-semibold text-[#5E4637] dark:text-[#BAA493] mb-1">
                   Question / Term (Front)
                 </label>
                 <textarea
@@ -391,11 +487,11 @@ export const StudyTools: React.FC = () => {
                   onChange={(e) => setNewFront(e.target.value)}
                   rows={3}
                   placeholder="Enter question or concept..."
-                  className="w-full rounded-lg bg-[#F5EDE3] border border-[#DFD0BE] p-2 text-xs text-[#26170F] focus:outline-none focus:border-[#C87A3B]"
+                  className="w-full rounded-lg bg-[#F5EDE3] dark:bg-[#1A100A] border border-[#DFD0BE] dark:border-[#382417] p-2 text-xs text-[#26170F] dark:text-[#F7EFE6] focus:outline-none focus:border-[#C87A3B]"
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-semibold text-[#5E4637] mb-1">
+                <label className="block text-[11px] font-semibold text-[#5E4637] dark:text-[#BAA493] mb-1">
                   Answer / Formula (Back)
                 </label>
                 <textarea
@@ -403,11 +499,11 @@ export const StudyTools: React.FC = () => {
                   onChange={(e) => setNewBack(e.target.value)}
                   rows={3}
                   placeholder="Enter explanation or proof..."
-                  className="w-full rounded-lg bg-[#F5EDE3] border border-[#DFD0BE] p-2 text-xs text-[#26170F] focus:outline-none focus:border-[#C87A3B]"
+                  className="w-full rounded-lg bg-[#F5EDE3] dark:bg-[#1A100A] border border-[#DFD0BE] dark:border-[#382417] p-2 text-xs text-[#26170F] dark:text-[#F7EFE6] focus:outline-none focus:border-[#C87A3B]"
                 />
               </div>
               <div className="flex items-center justify-between pt-1">
-                <span className="text-[10px] font-mono text-[#8A6F5C]">
+                <span className="text-[10px] font-mono text-[#8A6F5C] dark:text-[#A88E79]">
                   Linked to Page {currentPage}
                 </span>
                 <button
@@ -441,22 +537,22 @@ export const StudyTools: React.FC = () => {
                 {bookmarks.map((bm) => (
                   <div
                     key={bm.id}
-                    className="flex items-center justify-between bg-[#F5EDE3] border border-[#DFD0BE] rounded-lg px-2.5 py-1.5 text-[11px]"
+                    className="flex items-center justify-between bg-[#F5EDE3] dark:bg-[#1A100A] border border-[#DFD0BE] dark:border-[#382417] rounded-lg px-2.5 py-1.5 text-[11px]"
                   >
                     <button
                       onClick={() => goToPage(bm.page_num)}
                       className="flex items-center gap-1.5 text-left truncate flex-1"
                     >
-                      <span className="font-mono font-bold text-[#7C3222]">
+                      <span className="font-mono font-bold text-[#7C3222] dark:text-[#E09453]">
                         P.{bm.page_num}
                       </span>
-                      <span className="truncate text-[#26170F] font-medium">
+                      <span className="truncate text-[#26170F] dark:text-[#F7EFE6] font-medium">
                         {bm.title || `Page ${bm.page_num}`}
                       </span>
                     </button>
                     <button
                       onClick={() => toggleBookmarkPage(bm.page_num)}
-                      className="text-[#8A6F5C] hover:text-[#B54935] pl-1"
+                      className="text-[#8A6F5C] dark:text-[#A88E79] hover:text-[#B54935] pl-1"
                     >
                       ×
                     </button>
@@ -466,9 +562,9 @@ export const StudyTools: React.FC = () => {
             )}
           </div>
 
-          <div className="border-t border-[#DFD0BE] pt-3 flex-1">
+          <div className="border-t border-[#DFD0BE] dark:border-[#382417] pt-3 flex-1">
             <div className="flex items-center justify-between mb-2">
-              <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#8A6F5C]">
+              <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#8A6F5C] dark:text-[#A88E79]">
                 Color Highlights
               </h4>
               <div className="flex items-center gap-1">
@@ -476,8 +572,8 @@ export const StudyTools: React.FC = () => {
                   onClick={() => setHighlightFilter('all')}
                   className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${
                     highlightFilter === 'all'
-                      ? 'bg-[#26170F] text-[#FCF8F2]'
-                      : 'bg-[#EDE1D2] text-[#26170F]'
+                      ? 'bg-[#26170F] dark:bg-[#A85D2A] text-[#FCF8F2]'
+                      : 'bg-[#EDE1D2] dark:bg-[#281A12] text-[#26170F] dark:text-[#BAA493]'
                   }`}
                 >
                   All
@@ -506,7 +602,7 @@ export const StudyTools: React.FC = () => {
             </div>
 
             {filteredHighlights.length === 0 ? (
-              <p className="text-[11px] text-[#8A6F5C] italic">
+              <p className="text-[11px] text-[#8A6F5C] dark:text-[#7A6453] italic">
                 Select text inside the reader to highlight passages.
               </p>
             ) : (
@@ -521,23 +617,23 @@ export const StudyTools: React.FC = () => {
                   return (
                     <div
                       key={hl.id}
-                      className={`rounded-lg border border-[#DFD0BE] border-l-4 ${
+                      className={`rounded-lg border border-[#DFD0BE] dark:border-[#382417] bg-[#FCF8F2] dark:bg-[#1A100A] border-l-4 ${
                         borderMap[hl.color_hex] || borderMap.amber
                       } p-2.5 space-y-1.5`}
                     >
-                      <p className="font-serif italic text-xs text-[#26170F] leading-snug">
+                      <p className="font-serif italic text-xs text-[#26170F] dark:text-[#F7EFE6] leading-snug">
                         "{hl.selected_text}"
                       </p>
-                      <div className="flex items-center justify-between text-[10px] pt-1 border-t border-[#DFD0BE]/70">
+                      <div className="flex items-center justify-between text-[10px] pt-1 border-t border-[#DFD0BE]/70 dark:border-[#382417]">
                         <button
                           onClick={() => goToPage(hl.page_num)}
-                          className="font-mono font-bold text-[#7C3222] hover:underline"
+                          className="font-mono font-bold text-[#7C3222] dark:text-[#E09453] hover:underline"
                         >
                           Jump P.{hl.page_num} →
                         </button>
                         <button
                           onClick={() => deleteHighlight(hl.id)}
-                          className="text-[#8A6F5C] hover:text-[#B54935]"
+                          className="text-[#8A6F5C] dark:text-[#A88E79] hover:text-[#B54935]"
                         >
                           Delete
                         </button>
@@ -556,41 +652,41 @@ export const StudyTools: React.FC = () => {
         <div className="flex-1 flex flex-col overflow-y-auto p-3 space-y-3.5">
           {/* Mini-Grid Stats */}
           <div className="grid grid-cols-3 gap-1.5 text-center">
-            <div className="rounded-lg bg-[#F5EDE3] border border-[#DFD0BE] p-2">
-              <div className="font-mono text-sm font-bold text-[#7C3222]">
+            <div className="rounded-lg bg-[#F5EDE3] dark:bg-[#1A100A] border border-[#DFD0BE] dark:border-[#382417] p-2">
+              <div className="font-mono text-sm font-bold text-[#7C3222] dark:text-[#E09453]">
                 {highlights.length}
               </div>
-              <div className="text-[9px] uppercase tracking-wider text-[#8A6F5C]">
+              <div className="text-[9px] uppercase tracking-wider text-[#8A6F5C] dark:text-[#A88E79]">
                 Highlights
               </div>
             </div>
-            <div className="rounded-lg bg-[#F5EDE3] border border-[#DFD0BE] p-2">
-              <div className="font-mono text-sm font-bold text-[#4F683A]">
+            <div className="rounded-lg bg-[#F5EDE3] dark:bg-[#1A100A] border border-[#DFD0BE] dark:border-[#382417] p-2">
+              <div className="font-mono text-sm font-bold text-[#4F683A] dark:text-[#789A5B]">
                 {masteredCount}
               </div>
-              <div className="text-[9px] uppercase tracking-wider text-[#8A6F5C]">
+              <div className="text-[9px] uppercase tracking-wider text-[#8A6F5C] dark:text-[#A88E79]">
                 Mastered
               </div>
             </div>
-            <div className="rounded-lg bg-[#F5EDE3] border border-[#DFD0BE] p-2">
-              <div className="font-mono text-sm font-bold text-[#A85D2A]">
+            <div className="rounded-lg bg-[#F5EDE3] dark:bg-[#1A100A] border border-[#DFD0BE] dark:border-[#382417] p-2">
+              <div className="font-mono text-sm font-bold text-[#A85D2A] dark:text-[#F2AF72]">
                 {pomodoro.completedSessions}
               </div>
-              <div className="text-[9px] uppercase tracking-wider text-[#8A6F5C]">
+              <div className="text-[9px] uppercase tracking-wider text-[#8A6F5C] dark:text-[#A88E79]">
                 Sessions
               </div>
             </div>
           </div>
 
           {/* Session Checklist */}
-          <div className="rounded-xl border border-[#DFD0BE] bg-[#F8F2E9] p-2.5 space-y-2">
+          <div className="rounded-xl border border-[#DFD0BE] dark:border-[#382417] bg-[#F8F2E9] dark:bg-[#160E09] p-2.5 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#5E4637]">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#5E4637] dark:text-[#BAA493]">
                 Session Checklist
               </span>
               <button
                 onClick={clearCompletedChecklist}
-                className="text-[10px] text-[#8A6F5C] hover:text-[#26170F]"
+                className="text-[10px] text-[#8A6F5C] dark:text-[#A88E79] hover:text-[#26170F] dark:hover:text-[#F7EFE6]"
               >
                 Clear done
               </button>
@@ -609,23 +705,23 @@ export const StudyTools: React.FC = () => {
                 value={checklistText}
                 onChange={(e) => setChecklistText(e.target.value)}
                 placeholder="Add study goal..."
-                className="flex-1 bg-[#FCF8F2] border border-[#DFD0BE] rounded-lg px-2 py-1 text-[11px] focus:outline-none focus:border-[#C87A3B]"
+                className="flex-1 bg-[#FCF8F2] dark:bg-[#22150E] border border-[#DFD0BE] dark:border-[#382417] rounded-lg px-2 py-1 text-[11px] text-[#26170F] dark:text-[#F7EFE6] focus:outline-none focus:border-[#C87A3B]"
               />
               <button
                 type="submit"
-                className="bg-[#26170F] text-[#FCF8F2] px-2.5 py-1 rounded-lg text-xs font-bold"
+                className="bg-[#26170F] dark:bg-[#A85D2A] hover:bg-[#3D261A] dark:hover:bg-[#BD6B33] text-[#FCF8F2] px-2.5 py-1 rounded-lg text-xs font-bold transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
               </button>
             </form>
             <ul className="space-y-1 max-h-36 overflow-y-auto">
               {checklist.length === 0 ? (
-                <li className="text-[11px] text-[#8A6F5C] italic">No tasks yet.</li>
+                <li className="text-[11px] text-[#8A6F5C] dark:text-[#7A6453] italic">No tasks yet.</li>
               ) : (
                 checklist.map((item) => (
                   <li
                     key={item.id}
-                    className="flex items-center justify-between gap-1.5 bg-[#FCF8F2] border border-[#DFD0BE] rounded-lg px-2 py-1 text-[11px]"
+                    className="flex items-center justify-between gap-1.5 bg-[#FCF8F2] dark:bg-[#1A100A] border border-[#DFD0BE] dark:border-[#382417] rounded-lg px-2 py-1 text-[11px]"
                   >
                     <label className="flex items-center gap-1.5 cursor-pointer flex-1 min-w-0">
                       <input
@@ -636,7 +732,7 @@ export const StudyTools: React.FC = () => {
                       />
                       <span
                         className={`truncate ${
-                          item.done ? 'line-through text-[#8A6F5C]' : 'text-[#26170F]'
+                          item.done ? 'line-through text-[#8A6F5C] dark:text-[#7A6453]' : 'text-[#26170F] dark:text-[#F7EFE6]'
                         }`}
                       >
                         {item.text}
@@ -644,7 +740,7 @@ export const StudyTools: React.FC = () => {
                     </label>
                     <button
                       onClick={() => deleteChecklist(item.id)}
-                      className="text-[#8A6F5C] hover:text-[#B54935]"
+                      className="text-[#8A6F5C] dark:text-[#A88E79] hover:text-[#B54935]"
                     >
                       ×
                     </button>
@@ -655,19 +751,19 @@ export const StudyTools: React.FC = () => {
           </div>
 
           {/* Quick Math & CS Symbol Insert Pad */}
-          <div className="rounded-xl border border-[#DFD0BE] bg-[#FCF8F2] p-2.5 space-y-2">
+          <div className="rounded-xl border border-[#DFD0BE] dark:border-[#382417] bg-[#FCF8F2] dark:bg-[#160E09] p-2.5 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#5E4637]">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#5E4637] dark:text-[#BAA493]">
                 Math & CS Symbol Pad
               </span>
-              <span className="text-[9px] text-[#8A6F5C]">Click to copy</span>
+              <span className="text-[9px] text-[#8A6F5C] dark:text-[#A88E79]">Click to copy</span>
             </div>
             <div className="grid grid-cols-5 gap-1">
               {QUICK_SYMBOLS.map((sym) => (
                 <button
                   key={sym}
                   onClick={() => copySymbol(sym)}
-                  className="py-1.5 px-1 rounded-lg bg-[#F5EDE3] hover:bg-[#EDE1D2] border border-[#DFD0BE] font-mono text-[11px] font-semibold text-[#26170F] text-center truncate transition-colors"
+                  className="py-1.5 px-1 rounded-lg bg-[#F5EDE3] dark:bg-[#281A12] hover:bg-[#EDE1D2] dark:hover:bg-[#382417] border border-[#DFD0BE] dark:border-[#382417] font-mono text-[11px] font-semibold text-[#26170F] dark:text-[#F7EFE6] text-center truncate transition-colors"
                 >
                   {sym}
                 </button>

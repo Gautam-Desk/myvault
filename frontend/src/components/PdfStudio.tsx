@@ -10,6 +10,7 @@ import {
   Bookmark as BookmarkIcon,
   PanelRight,
   PanelLeftClose,
+  Trash2,
 } from 'lucide-react';
 import { useLibraryStore } from '../store/useLibraryStore';
 import { getPdfStreamUrl } from '../api/client';
@@ -49,6 +50,7 @@ export const PdfStudio: React.FC = () => {
     nextPage,
     toggleBookmarkPage,
     addHighlight,
+    deleteHighlight,
   } = useLibraryStore();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -218,20 +220,20 @@ export const PdfStudio: React.FC = () => {
     <section className="flex-1 flex overflow-hidden relative">
       {/* PANE 1: LEFT OUTLINE & THUMBNAILS RAIL (172px wide) */}
       <aside
-        className={`w-[172px] bg-[#F8F2E9] border-r border-[#DFD0BE] flex flex-col shrink-0 z-20 absolute md:relative inset-y-0 left-0 shadow-lg md:shadow-none transition-transform duration-200 ${
+        className={`w-[172px] bg-[#F8F2E9] dark:bg-[#160E09] border-r border-[#DFD0BE] dark:border-[#382417] flex flex-col shrink-0 z-20 absolute md:relative inset-y-0 left-0 shadow-lg md:shadow-none transition-transform duration-200 ${
           readerLeftRailOpen ? 'translate-x-0' : '-translate-x-full md:hidden'
         }`}
       >
         {/* Document Switcher */}
-        <div className="p-2 border-b border-[#DFD0BE] bg-[#F3E9DC] space-y-1.5">
+        <div className="p-2 border-b border-[#DFD0BE] dark:border-[#382417] bg-[#F3E9DC] dark:bg-[#1C120B] space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-[9px] font-bold uppercase tracking-widest text-[#8A6F5C]">
+            <span className="text-[9px] font-bold uppercase tracking-widest text-[#8A6F5C] dark:text-[#A88E79]">
               Outline & Pages
             </span>
             <button
               onClick={toggleReaderLeftRail}
               title="Hide Outline Rail"
-              className="p-0.5 text-[#8A6F5C] hover:text-[#26170F] rounded"
+              className="p-0.5 text-[#8A6F5C] dark:text-[#A88E79] hover:text-[#26170F] dark:hover:text-[#F7EFE6] rounded"
             >
               <PanelLeftClose className="w-3.5 h-3.5" />
             </button>
@@ -239,7 +241,7 @@ export const PdfStudio: React.FC = () => {
           <select
             value={activeDocId}
             onChange={(e) => setActiveDoc(e.target.value)}
-            className="w-full text-[11px] font-semibold text-[#26170F] bg-[#FCF8F2] border border-[#DFD0BE] rounded-lg px-2 py-1 focus:outline-none focus:border-[#C87A3B] truncate"
+            className="w-full text-[11px] font-semibold text-[#26170F] dark:text-[#F7EFE6] bg-[#FCF8F2] dark:bg-[#25170F] border border-[#DFD0BE] dark:border-[#382417] rounded-lg px-2 py-1 focus:outline-none focus:border-[#C87A3B] truncate"
           >
             {books.map((b) => (
               <option key={b.id} value={b.id}>
@@ -250,18 +252,18 @@ export const PdfStudio: React.FC = () => {
         </div>
 
         {/* Saved Bookmarks Strip */}
-        <div className="p-2 border-b border-[#DFD0BE] bg-[#FCF8F2]/70">
+        <div className="p-2 border-b border-[#DFD0BE] dark:border-[#382417] bg-[#FCF8F2]/70 dark:bg-[#1A100A]/70">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[9px] font-bold uppercase tracking-wider text-[#5E4637] flex items-center gap-1">
+            <span className="text-[9px] font-bold uppercase tracking-wider text-[#5E4637] dark:text-[#BAA493] flex items-center gap-1">
               <BookmarkIcon className="w-2.5 h-2.5 text-[#A85D2A]" /> Bookmarks
             </span>
-            <span className="text-[10px] font-mono font-bold text-[#A85D2A]">
+            <span className="text-[10px] font-mono font-bold text-[#A85D2A] dark:text-[#E09453]">
               {bookmarks.length}
             </span>
           </div>
           <div className="flex flex-wrap gap-1 max-h-16 overflow-y-auto">
             {bookmarks.length === 0 ? (
-              <span className="text-[10px] text-[#8A6F5C] italic">None saved</span>
+              <span className="text-[10px] text-[#8A6F5C] dark:text-[#7A6453] italic">None saved</span>
             ) : (
               bookmarks.map((bm) => (
                 <button
@@ -269,8 +271,8 @@ export const PdfStudio: React.FC = () => {
                   onClick={() => goToPage(bm.page_num)}
                   className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold transition-colors ${
                     currentPage === bm.page_num
-                      ? 'bg-[#7C3222] text-[#FCF8F2]'
-                      : 'bg-[#F5EDE3] text-[#7C3222] border border-[#DFD0BE] hover:bg-[#EDE1D2]'
+                      ? 'bg-[#7C3222] dark:bg-[#A85D2A] text-[#FCF8F2]'
+                      : 'bg-[#F5EDE3] dark:bg-[#25170F] text-[#7C3222] dark:text-[#E09453] border border-[#DFD0BE] dark:border-[#382417] hover:bg-[#EDE1D2] dark:hover:bg-[#331E13]'
                   }`}
                 >
                   P.{bm.page_num}
@@ -290,38 +292,38 @@ export const PdfStudio: React.FC = () => {
                 onClick={() => goToPage(pNum)}
                 className={`w-full text-left p-2 rounded-lg border transition-all flex items-start gap-2 ${
                   isActive
-                    ? 'bg-[#FCF8F2] border-[#C87A3B] ring-1 ring-[#C87A3B]/40 shadow-xs'
-                    : 'bg-[#FCF8F2]/65 border-[#DFD0BE] hover:bg-[#FCF8F2]'
+                    ? 'bg-[#FCF8F2] dark:bg-[#25170F] border-[#C87A3B] ring-1 ring-[#C87A3B]/40 shadow-xs'
+                    : 'bg-[#FCF8F2]/65 dark:bg-[#1A100A]/60 border-[#DFD0BE] dark:border-[#382417] hover:bg-[#FCF8F2] dark:hover:bg-[#25170F]'
                 }`}
               >
                 <div
                   className={`w-7 h-9 rounded border ${
                     isActive
-                      ? 'border-[#C87A3B] bg-[#F5EDE3]'
-                      : 'border-[#DFD0BE] bg-[#F8F2E9]'
+                      ? 'border-[#C87A3B] bg-[#F5EDE3] dark:bg-[#2E1C12]'
+                      : 'border-[#DFD0BE] dark:border-[#382417] bg-[#F8F2E9] dark:bg-[#1A100A]'
                   } flex flex-col justify-between p-1 shrink-0`}
                 >
                   <span
                     className={`text-[8px] font-mono font-bold ${
-                      isActive ? 'text-[#7C3222]' : 'text-[#8A6F5C]'
+                      isActive ? 'text-[#7C3222] dark:text-[#E09453]' : 'text-[#8A6F5C] dark:text-[#A88E79]'
                     }`}
                   >
                     {pNum}
                   </span>
                   <div className="space-y-0.5">
-                    <div className="h-0.5 w-full bg-[#C8B5A2]" />
-                    <div className="h-0.5 w-2/3 bg-[#DFD0BE]" />
+                    <div className="h-0.5 w-full bg-[#C8B5A2] dark:bg-[#5E4637]" />
+                    <div className="h-0.5 w-2/3 bg-[#DFD0BE] dark:bg-[#382417]" />
                   </div>
                 </div>
                 <div className="min-w-0 flex-1">
                   <span
                     className={`text-[9px] font-mono uppercase ${
-                      isActive ? 'text-[#A85D2A] font-bold' : 'text-[#8A6F5C]'
+                      isActive ? 'text-[#A85D2A] dark:text-[#E09453] font-bold' : 'text-[#8A6F5C] dark:text-[#A88E79]'
                     }`}
                   >
                     Page {pNum}
                   </span>
-                  <p className="text-[11px] font-semibold text-[#26170F] line-clamp-1 leading-tight mt-0.5">
+                  <p className="text-[11px] font-semibold text-[#26170F] dark:text-[#F7EFE6] line-clamp-1 leading-tight mt-0.5">
                     Folio {pNum}
                   </p>
                 </div>
@@ -332,36 +334,36 @@ export const PdfStudio: React.FC = () => {
       </aside>
 
       {/* PANE 2: CENTER HIGH-DPI READER */}
-      <div className="flex-1 flex flex-col min-w-0 bg-[#EDE1D2] relative">
+      <div className="flex-1 flex flex-col min-w-0 bg-[#EDE1D2] dark:bg-[#120B07] relative">
         {/* COMPACT READER TOOLBAR (42px) */}
-        <div className="h-[42px] bg-[#FCF8F2] border-b border-[#DFD0BE] px-2.5 flex items-center justify-between gap-1.5 shrink-0 z-10 overflow-x-auto">
+        <div className="h-[42px] bg-[#FCF8F2] dark:bg-[#1A100A] border-b border-[#DFD0BE] dark:border-[#382417] px-2.5 flex items-center justify-between gap-1.5 shrink-0 z-10 overflow-x-auto">
           {/* Left: Rail Toggle & Page Nav */}
           <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={toggleReaderLeftRail}
               title="Toggle Page Outline Rail"
-              className="p-1.5 rounded-lg text-[#5E4637] hover:text-[#26170F] hover:bg-[#EDE1D2] border border-[#DFD0BE] transition-colors"
+              className="p-1.5 rounded-lg text-[#5E4637] dark:text-[#BAA493] hover:text-[#26170F] dark:hover:text-[#F7EFE6] hover:bg-[#EDE1D2] dark:hover:bg-[#25170F] border border-[#DFD0BE] dark:border-[#382417] transition-colors"
             >
               <ListTree className="w-3.5 h-3.5" />
             </button>
 
-            <div className="flex items-center bg-[#F5EDE3] rounded-lg p-0.5 border border-[#DFD0BE]">
+            <div className="flex items-center bg-[#F5EDE3] dark:bg-[#25170F] rounded-lg p-0.5 border border-[#DFD0BE] dark:border-[#382417]">
               <button
                 onClick={prevPage}
                 disabled={currentPage <= 1}
                 title="Previous Page"
-                className="p-1 rounded text-[#26170F] hover:bg-[#FCF8F2] disabled:opacity-35 transition-colors"
+                className="p-1 rounded text-[#26170F] dark:text-[#F7EFE6] hover:bg-[#FCF8F2] dark:hover:bg-[#331E13] disabled:opacity-35 transition-colors"
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
               </button>
-              <span className="px-2 text-[11px] font-mono font-semibold text-[#26170F] whitespace-nowrap">
+              <span className="px-2 text-[11px] font-mono font-semibold text-[#26170F] dark:text-[#F7EFE6] whitespace-nowrap">
                 Page {currentPage} / {totalPages}
               </span>
               <button
                 onClick={nextPage}
                 disabled={currentPage >= totalPages}
                 title="Next Page"
-                className="p-1 rounded text-[#26170F] hover:bg-[#FCF8F2] disabled:opacity-35 transition-colors"
+                className="p-1 rounded text-[#26170F] dark:text-[#F7EFE6] hover:bg-[#FCF8F2] dark:hover:bg-[#331E13] disabled:opacity-35 transition-colors"
               >
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
@@ -370,11 +372,11 @@ export const PdfStudio: React.FC = () => {
 
           {/* Center: Zoom Controls & 3 Scholarly Themes */}
           <div className="flex items-center gap-1.5 shrink-0">
-            <div className="flex items-center bg-[#F5EDE3] rounded-lg p-0.5 border border-[#DFD0BE]">
+            <div className="flex items-center bg-[#F5EDE3] dark:bg-[#25170F] rounded-lg p-0.5 border border-[#DFD0BE] dark:border-[#382417]">
               <button
                 onClick={() => stepZoom(-1)}
                 title="Zoom Out"
-                className="p-1 rounded text-[#5E4637] hover:bg-[#FCF8F2]"
+                className="p-1 rounded text-[#5E4637] dark:text-[#BAA493] hover:bg-[#FCF8F2] dark:hover:bg-[#331E13]"
               >
                 <Minus className="w-3 h-3" />
               </button>
@@ -382,7 +384,7 @@ export const PdfStudio: React.FC = () => {
                 value={zoomLevel}
                 onChange={(e) => setZoomLevel(e.target.value)}
                 aria-label="Zoom Level"
-                className="bg-transparent text-[11px] font-mono font-semibold text-[#26170F] px-1 focus:outline-none cursor-pointer"
+                className="bg-transparent text-[11px] font-mono font-semibold text-[#26170F] dark:text-[#F7EFE6] px-1 focus:outline-none cursor-pointer"
               >
                 <option value="0.75">75%</option>
                 <option value="1">100%</option>
@@ -393,20 +395,20 @@ export const PdfStudio: React.FC = () => {
               <button
                 onClick={() => stepZoom(1)}
                 title="Zoom In"
-                className="p-1 rounded text-[#5E4637] hover:bg-[#FCF8F2]"
+                className="p-1 rounded text-[#5E4637] dark:text-[#BAA493] hover:bg-[#FCF8F2] dark:hover:bg-[#331E13]"
               >
                 <Plus className="w-3 h-3" />
               </button>
             </div>
 
             {/* 3 Scholarly Themes */}
-            <div className="hidden sm:flex items-center bg-[#F5EDE3] rounded-lg p-0.5 border border-[#DFD0BE]">
+            <div className="hidden sm:flex items-center bg-[#F5EDE3] dark:bg-[#25170F] rounded-lg p-0.5 border border-[#DFD0BE] dark:border-[#382417]">
               <button
                 onClick={() => setReaderTheme('parchment')}
                 className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] transition-all ${
                   readerTheme === 'parchment'
-                    ? 'font-bold bg-[#26170F] text-[#FCF8F2]'
-                    : 'font-medium text-[#5E4637] hover:text-[#26170F]'
+                    ? 'font-bold bg-[#26170F] dark:bg-[#A85D2A] text-[#FCF8F2]'
+                    : 'font-medium text-[#5E4637] dark:text-[#BAA493] hover:text-[#26170F] dark:hover:text-[#F7EFE6]'
                 }`}
               >
                 <span className="w-2.5 h-2.5 rounded-full bg-[#FCF8F2] border border-[#8A6F5C]" />
@@ -416,8 +418,8 @@ export const PdfStudio: React.FC = () => {
                 onClick={() => setReaderTheme('sepia')}
                 className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] transition-all ${
                   readerTheme === 'sepia'
-                    ? 'font-bold bg-[#26170F] text-[#FCF8F2]'
-                    : 'font-medium text-[#5E4637] hover:text-[#26170F]'
+                    ? 'font-bold bg-[#26170F] dark:bg-[#A85D2A] text-[#FCF8F2]'
+                    : 'font-medium text-[#5E4637] dark:text-[#BAA493] hover:text-[#26170F] dark:hover:text-[#F7EFE6]'
                 }`}
               >
                 <span className="w-2.5 h-2.5 rounded-full bg-[#E8D5B5] border border-[#7C3222]/50" />
@@ -427,8 +429,8 @@ export const PdfStudio: React.FC = () => {
                 onClick={() => setReaderTheme('espresso')}
                 className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] transition-all ${
                   readerTheme === 'espresso'
-                    ? 'font-bold bg-[#26170F] text-[#FCF8F2]'
-                    : 'font-medium text-[#5E4637] hover:text-[#26170F]'
+                    ? 'font-bold bg-[#26170F] dark:bg-[#A85D2A] text-[#FCF8F2]'
+                    : 'font-medium text-[#5E4637] dark:text-[#BAA493] hover:text-[#26170F] dark:hover:text-[#F7EFE6]'
                 }`}
               >
                 <span className="w-2.5 h-2.5 rounded-full bg-[#231710] border border-[#A88E79]" />
@@ -439,20 +441,20 @@ export const PdfStudio: React.FC = () => {
 
           {/* Right: Brush + 4 Swatches, Bookmark, Dock Toggle */}
           <div className="flex items-center gap-1.5 shrink-0">
-            <div className="flex items-center bg-[#F5EDE3] rounded-lg p-0.5 border border-[#DFD0BE] gap-1">
+            <div className="flex items-center bg-[#F5EDE3] dark:bg-[#25170F] rounded-lg p-0.5 border border-[#DFD0BE] dark:border-[#382417] gap-1">
               <button
                 onClick={toggleHighlightMode}
                 title="Toggle Instant Highlight Brush"
                 className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] transition-all ${
                   highlightMode
                     ? 'font-bold bg-[#C87A3B] text-[#FCF8F2]'
-                    : 'font-semibold text-[#5E4637] hover:text-[#26170F]'
+                    : 'font-semibold text-[#5E4637] dark:text-[#BAA493] hover:text-[#26170F] dark:hover:text-[#F7EFE6]'
                 }`}
               >
                 <Highlighter className="w-3 h-3" />
                 <span className="hidden lg:inline">Brush</span>
               </button>
-              <div className="flex items-center gap-1 px-1 border-l border-[#DFD0BE]">
+              <div className="flex items-center gap-1 px-1 border-l border-[#DFD0BE] dark:border-[#382417]">
                 {(['amber', 'terracotta', 'sage', 'slate'] as HighlightColor[]).map((c) => {
                   const bgClass =
                     c === 'amber'
@@ -468,7 +470,7 @@ export const PdfStudio: React.FC = () => {
                       onClick={() => setActiveHighlightColor(c)}
                       title={c}
                       className={`w-3.5 h-3.5 rounded-full ${bgClass} transition-transform hover:scale-110 ${
-                        activeHighlightColor === c ? 'ring-2 ring-[#26170F] scale-110' : ''
+                        activeHighlightColor === c ? 'ring-2 ring-[#26170F] dark:ring-[#FCF8F2] scale-110' : ''
                       }`}
                     />
                   );
@@ -481,8 +483,8 @@ export const PdfStudio: React.FC = () => {
               title={isBookmarked ? 'Remove Bookmark' : 'Bookmark Page'}
               className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] border transition-all ${
                 isBookmarked
-                  ? 'font-bold bg-[#7C3222] text-[#FCF8F2] border-[#7C3222]'
-                  : 'font-semibold bg-[#F5EDE3] text-[#5E4637] hover:text-[#26170F] border-[#DFD0BE]'
+                  ? 'font-bold bg-[#7C3222] dark:bg-[#A85D2A] text-[#FCF8F2] border-[#7C3222] dark:border-[#A85D2A]'
+                  : 'font-semibold bg-[#F5EDE3] dark:bg-[#25170F] text-[#5E4637] dark:text-[#BAA493] hover:text-[#26170F] dark:hover:text-[#F7EFE6] border-[#DFD0BE] dark:border-[#382417]'
               }`}
             >
               <BookmarkIcon className="w-3 h-3" />
@@ -492,7 +494,7 @@ export const PdfStudio: React.FC = () => {
             <button
               onClick={toggleReaderRightDock}
               title="Toggle Study Toolkit Dock"
-              className="p-1.5 rounded-lg text-[#5E4637] hover:text-[#26170F] hover:bg-[#EDE1D2] border border-[#DFD0BE] transition-colors"
+              className="p-1.5 rounded-lg text-[#5E4637] dark:text-[#BAA493] hover:text-[#26170F] dark:hover:text-[#F7EFE6] hover:bg-[#EDE1D2] dark:hover:bg-[#25170F] border border-[#DFD0BE] dark:border-[#382417] transition-colors"
             >
               <PanelRight className="w-3.5 h-3.5" />
             </button>
@@ -509,8 +511,8 @@ export const PdfStudio: React.FC = () => {
             className={`reader-sheet-${readerTheme} rounded-xl transition-all duration-200 max-w-full p-2 sm:p-3 relative select-text`}
           >
             {renderLoading && (
-              <div className="absolute inset-0 bg-[#FCF8F2]/60 backdrop-blur-[1px] flex items-center justify-center z-30">
-                <span className="text-xs font-mono text-[#7C3222] animate-pulse">
+              <div className="absolute inset-0 bg-[#FCF8F2]/60 dark:bg-[#120B07]/60 backdrop-blur-[1px] flex items-center justify-center z-30">
+                <span className="text-xs font-mono text-[#7C3222] dark:text-[#E09453] animate-pulse">
                   Rendering High-DPI Page...
                 </span>
               </div>
@@ -522,17 +524,68 @@ export const PdfStudio: React.FC = () => {
               <canvas ref={canvasRef} />
               <div ref={textLayerRef} className="textLayer" />
 
-              {/* Render Saved Highlights Overlay */}
-              {pageHighlights.map((hl) => (
-                <div
-                  key={hl.id}
-                  title={`Highlight: "${hl.selected_text}"`}
-                  className="pointer-events-none"
-                />
-              ))}
+              {/* Render Saved Highlights Overlay Indicators */}
+              {pageHighlights.map((hl) => {
+                const colorBg =
+                  hl.color_hex === 'amber'
+                    ? 'bg-[#E09453]/20 border-l-2 border-[#E09453]'
+                    : hl.color_hex === 'terracotta'
+                    ? 'bg-[#C45B47]/20 border-l-2 border-[#C45B47]'
+                    : hl.color_hex === 'sage'
+                    ? 'bg-[#6B8654]/20 border-l-2 border-[#6B8654]'
+                    : 'bg-[#5B7C94]/20 border-l-2 border-[#5B7C94]';
+                return (
+                  <div
+                    key={hl.id}
+                    title={`Highlight: "${hl.selected_text}"`}
+                    className={`pointer-events-none absolute left-0 right-0 py-0.5 px-2 text-[10px] italic ${colorBg} opacity-0 hover:opacity-100 transition-opacity`}
+                  />
+                );
+              })}
             </div>
           </div>
         </div>
+
+        {/* Floating Active Page Highlights Pill Bar */}
+        {pageHighlights.length > 0 && (
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 max-w-[90%] bg-[#FCF8F2]/95 dark:bg-[#1C120B]/95 backdrop-blur border border-[#DFD0BE] dark:border-[#382417] shadow-lg rounded-xl px-3 py-1.5 flex items-center gap-2 overflow-x-auto">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A6F5C] dark:text-[#A88E79] shrink-0">
+              Page {currentPage} Highlights ({pageHighlights.length}):
+            </span>
+            <div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
+              {pageHighlights.map((hl) => {
+                const colorDot =
+                  hl.color_hex === 'amber'
+                    ? 'bg-[#E09453]'
+                    : hl.color_hex === 'terracotta'
+                    ? 'bg-[#C45B47]'
+                    : hl.color_hex === 'sage'
+                    ? 'bg-[#6B8654]'
+                    : 'bg-[#5B7C94]';
+                return (
+                  <div
+                    key={hl.id}
+                    className="flex items-center gap-1.5 bg-[#F5EDE3] dark:bg-[#281A12] border border-[#DFD0BE] dark:border-[#382417] rounded-lg px-2 py-1 text-[11px] text-[#26170F] dark:text-[#F7EFE6] shrink-0 max-w-[240px]"
+                  >
+                    <span className={`w-2 h-2 rounded-full ${colorDot} shrink-0`} />
+                    <span className="truncate italic font-serif" title={hl.selected_text}>
+                      "{hl.selected_text}"
+                    </span>
+                    <button
+                      onClick={() => {
+                        deleteHighlight(hl.id);
+                      }}
+                      title="Delete this highlight"
+                      className="text-[#8A6F5C] dark:text-[#A88E79] hover:text-[#B54935] p-0.5 rounded shrink-0 transition-colors"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* PANE 3: RIGHT STUDY TOOLKIT DOCK (295px wide) */}

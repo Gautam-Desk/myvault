@@ -55,6 +55,7 @@ interface LibraryStore {
   pomodoro: PomodoroState;
   checklist: ChecklistItem[];
   stats: LibraryStats | null;
+  uploadProgress: { percent: number; speedMBps: number; filename: string } | null;
 
   // Actions
   loadBooks: () => Promise<void>;
@@ -67,6 +68,7 @@ interface LibraryStore {
   performSearch: (q: string) => Promise<void>;
   openUnifiedModal: (mode: 'flashcards' | 'annotations') => void;
   closeUnifiedModal: () => void;
+  setUploadProgress: (progress: { percent: number; speedMBps: number; filename: string } | null) => void;
 
   toggleMainSidebar: (force?: boolean) => void;
   toggleReaderLeftRail: () => void;
@@ -93,6 +95,7 @@ interface LibraryStore {
   deleteHighlight: (id: string) => Promise<void>;
   updateNotes: (markdown: string, pageNum?: number) => void;
   saveNotesDebounced: (markdown: string, pageNum?: number) => Promise<void>;
+  clearNotes: () => Promise<void>;
   addFlashcard: (front: string, back: string, pageNum?: number) => Promise<void>;
   reviewCard: (cardId: string, rating: number) => Promise<void>;
   toggleCardMastered: (cardId: string) => Promise<void>;
@@ -161,6 +164,8 @@ export const useLibraryStore = create<LibraryStore>((set, get) => ({
     { id: 'chk-2', text: 'Review flashcards before break', done: false },
   ],
   stats: null,
+  uploadProgress: null,
+  setUploadProgress: (progress) => set({ uploadProgress: progress }),
 
   loadBooks: async () => {
     try {
@@ -323,25 +328,59 @@ export const useLibraryStore = create<LibraryStore>((set, get) => ({
   },
 
   deleteBook: async (docId) => {
-    await api.deleteBook(docId);
+    try {
+      await api.deleteBook(docId);
+    } catch (e) {
+      console.warn('Backend delete error, applying optimistic local delete:', e);
+    }
     const remaining = get().books.filter((b) => b.id !== docId);
     set({ books: remaining });
-    if (get().activeDocId === docId && remaining.length > 0) {
-      get().setActiveDoc(remaining[0].id);
+    if (get().activeDocId === docId) {
+      if (remaining.length > 0) {
+        await get().setActiveDoc(remaining[0].id);
+      } else {
+        set({
+          activeBook: null,
+          activeDocId: '',
+          highlights: [],
+          currentNotes: '',
+          flashcards: [],
+          bookmarks: [],
+        });
+      }
     }
   },
 
   uploadPdf: async (file) => {
-    const newBook = await api.uploadBook(file);
-    set({ libraryScope: 'all', selectedCategory: 'All Categories' });
-    await get().loadBooks();
-    set({
-      activeDocId: newBook.id,
-      activeBook: newBook,
-      activeView: 'reader',
-    });
-    await get().loadBookDetails(newBook.id);
-    return newBook;
+    get().setUploadProgress({ percent: 1, speedMBps: 0, filename: file.name });
+    try {
+      const newBook = await api.uploadBook(
+        file,
+        undefined,
+        undefined,
+        undefined,
+        (progress) => {
+          get().setUploadProgress({
+            percent: progress.percent,
+            speedMBps: progress.speedMBps,
+            filename: file.name,
+          });
+        }
+      );
+      set({ libraryScope: 'all', selectedCategory: 'All Categories' });
+      await get().loadBooks();
+      set({
+        activeDocId: newBook.id,
+        activeBook: newBook,
+        activeView: 'reader',
+      });
+      await get().loadBookDetails(newBook.id);
+      return newBook;
+    } finally {
+      setTimeout(() => {
+        get().setUploadProgress(null);
+      }, 1000);
+    }
   },
 
   addHighlight: async (text, color) => {
@@ -358,8 +397,23 @@ export const useLibraryStore = create<LibraryStore>((set, get) => ({
   },
 
   deleteHighlight: async (id) => {
-    await api.deleteHighlight(id);
+    try {
+      await api.deleteHighlight(id);
+    } catch (e) {
+      console.warn('Backend highlight delete error:', e);
+    }
     set({ highlights: get().highlights.filter((h) => h.id !== id) });
+  },
+
+  clearNotes: async () => {
+    const { activeBook } = get();
+    if (!activeBook) return;
+    set({ currentNotes: '', notesSaveStatus: 'Saved' });
+    try {
+      await api.saveNotes(activeBook.id, '', activeBook.current_page);
+    } catch (e) {
+      console.warn('Backend clear notes error:', e);
+    }
   },
 
   updateNotes: (markdown, pageNum) => {
@@ -409,7 +463,11 @@ export const useLibraryStore = create<LibraryStore>((set, get) => ({
   },
 
   deleteCard: async (cardId) => {
-    await api.deleteFlashcard(cardId);
+    try {
+      await api.deleteFlashcard(cardId);
+    } catch (e) {
+      console.warn('Backend card delete error:', e);
+    }
     set({ flashcards: get().flashcards.filter((f) => f.id !== cardId) });
   },
 

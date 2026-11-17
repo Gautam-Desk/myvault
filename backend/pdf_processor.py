@@ -18,12 +18,13 @@ def compute_file_sha256(file_path: Path) -> str:
 
 def save_uploaded_stream_with_hash(upload_file) -> tuple[Path, str, int]:
     """
-    Streams uploaded file to a temporary file, computes SHA-256,
-    and moves to content-addressed destination `pdfs/<sha256>.pdf`.
+    Streams uploaded file using 1 MB chunks for maximum throughput,
+    computes SHA-256 on the fly, and moves to `pdfs/<sha256>.pdf`.
     """
     temp_path = PDFS_DIR / f"temp_{os.urandom(8).hex()}.pdf"
     hasher = hashlib.sha256()
     total_bytes = 0
+    CHUNK_SIZE = 1048576  # 1 MB chunk for fast high-speed transfer
 
     try:
         # Reset seek position in case it was read
@@ -32,9 +33,10 @@ def save_uploaded_stream_with_hash(upload_file) -> tuple[Path, str, int]:
         elif hasattr(upload_file, "seek"):
             upload_file.seek(0)
 
-        with open(temp_path, "wb") as buffer:
+        with open(temp_path, "wb", buffering=CHUNK_SIZE) as buffer:
+            reader = upload_file.file if hasattr(upload_file, "file") else upload_file
             while True:
-                chunk = upload_file.file.read(65536) if hasattr(upload_file, "file") else upload_file.read(65536)
+                chunk = reader.read(CHUNK_SIZE)
                 if not chunk:
                     break
                 total_bytes += len(chunk)
@@ -65,8 +67,8 @@ def save_uploaded_stream_with_hash(upload_file) -> tuple[Path, str, int]:
 
 def generate_cover_thumbnail(pdf_path: Path, sha256: str) -> Optional[str]:
     """
-    Renders a crisp 240px WebP thumbnail from page 0 of the PDF using PyMuPDF.
-    Returns relative thumbnail filename (e.g. `8f4a2c...webp`).
+    Renders a crisp 240px WebP thumbnail from page 0 using PyMuPDF.
+    Optimized for high-speed rasterization directly to WebP.
     """
     thumb_filename = f"{sha256}.webp"
     thumb_dest = THUMBNAILS_DIR / thumb_filename
@@ -80,18 +82,16 @@ def generate_cover_thumbnail(pdf_path: Path, sha256: str) -> Optional[str]:
             return None
 
         page = doc[0]
-        # Target thumbnail width = 240px
         rect = page.rect
         scale = 240.0 / rect.width if rect.width > 0 else 1.0
-        # High-DPI 2x matrix for crispness
-        matrix = fitz.Matrix(scale * 2.0, scale * 2.0)
+        # Crisp 1.5x resolution scaled cleanly
+        matrix = fitz.Matrix(scale * 1.5, scale * 1.5)
         pix = page.get_pixmap(matrix=matrix, alpha=False)
 
         # Save as WebP
         try:
-            pix.pil_save(str(thumb_dest), format="WEBP", quality=85)
+            pix.pil_save(str(thumb_dest), format="WEBP", quality=80)
         except Exception:
-            # Fallback direct pixmap save
             pix.save(str(thumb_dest))
 
         doc.close()

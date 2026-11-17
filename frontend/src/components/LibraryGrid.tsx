@@ -27,6 +27,7 @@ export const LibraryGrid: React.FC = () => {
     toggleStar,
     deleteBook,
     uploadPdf,
+    uploadProgress,
   } = useLibraryStore();
 
   const handleDrop = async (e: React.DragEvent) => {
@@ -121,11 +122,32 @@ export const LibraryGrid: React.FC = () => {
         </div>
       )}
 
-      {/* Uploading Status Banner */}
-      {isUploading && (
-        <div className="bg-[#22150E] text-[#F7EFE6] border border-[#C87A3B] p-2.5 rounded-xl flex items-center justify-between text-xs animate-pulse">
-          <span>Processing PDF: Computing SHA-256, rendering 240px WebP cover & indexing FTS5...</span>
-          <span className="font-mono text-[#E09453]">Please wait</span>
+      {/* High-Speed Upload Progress Indicator */}
+      {(isUploading || uploadProgress) && (
+        <div className="bg-[#22150E] text-[#F7EFE6] border border-[#E09453] p-3 rounded-xl shadow-xl flex flex-col gap-2 animate-in fade-in duration-150">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-semibold text-[#F7EFE6] flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#E09453] animate-ping" />
+              <span>Uploading {uploadProgress?.filename || 'Document'}</span>
+            </span>
+            <div className="flex items-center gap-2.5 font-mono text-[11px]">
+              {uploadProgress?.speedMBps ? (
+                <span className="text-[#A88E79]">{uploadProgress.speedMBps} MB/s</span>
+              ) : null}
+              <span className="font-bold text-[#E09453]">{uploadProgress?.percent || 0}%</span>
+            </div>
+          </div>
+          <div className="w-full h-1.5 bg-[#190F0A] rounded-full overflow-hidden border border-[#3B2519]">
+            <div
+              className="h-full bg-gradient-to-r from-[#C87A3B] to-[#E09453] transition-all duration-150"
+              style={{ width: `${Math.max(5, uploadProgress?.percent || 0)}%` }}
+            />
+          </div>
+          <span className="text-[10px] text-[#A88E79]">
+            {uploadProgress?.percent === 100
+              ? 'Cataloging: Rendering 240px WebP cover & indexing FTS5 text...'
+              : 'Streaming chunks to storage vault at maximum network speed...'}
+          </span>
         </div>
       )}
       {/* 72px CONTINUE READING STRIP */}
